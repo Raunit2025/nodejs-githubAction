@@ -1,0 +1,31 @@
+name: Deploy to Ubuntu Laptop
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Build Docker Image
+        run: docker build -t my-node-app .
+
+      - name: Stop Old Container
+        run: |
+          docker stop node-server-container || true
+          docker rm node-server-container || true
+
+      - name: Run New Container
+        run: |
+          # MAP PORT 8080 (Ubuntu) -> PORT 3000 (Container)
+          docker run -d \
+            --name node-server-container \
+            --restart unless-stopped \
+            -p 8080:3000 \
+            my-node-app
